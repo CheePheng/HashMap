@@ -37,6 +37,11 @@ public class HashMap {
     }
 
     public String put(String key, String value) {
+        if (key == null || value == null) {
+            throw new IllegalArgumentException("Null fields not permitted");
+        }
+        
+        
         int slot = hash(key);
         if (data[slot] == null) {
             Entry newEntry = new Entry(key, value);
@@ -44,28 +49,27 @@ public class HashMap {
             size++;
             return null;
         } else {
-            String oldValue = data[slot].updateValue(value);
-            return oldValue;
+            if (data[slot].key.equals(key)) {
+                String oldValue = data[slot].updateValue(value);
+                return oldValue;
+            } else {
+                throw new SlotOccupiedException("Provided key maps to occupied slot in map.");
+            }
         }
     }
 
     public String get(String key) {
-        if (key == null) {
-            throw new IllegalArgumentException();
-        }
-
         int slot = hash(key);
-        if (data[slot] == null) {
-            return null;
-        } else {
+        if (data[slot] != null) {
             return data[slot].value;
+        } else {
+            return null;
         }
-
     }
 
     private static class Entry {
 
-        private String key;
+        private final String key;
         private String value;
 
         public Entry(String key, String value) {
@@ -87,5 +91,4 @@ public class HashMap {
             return oldValue;
         }
     }
-
 }
