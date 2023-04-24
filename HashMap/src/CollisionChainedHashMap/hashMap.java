@@ -1,28 +1,31 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Utils;
+package CollisionChainedHashMap;
+
+import Utils.SlotOccupiedException;
+import java.util.LinkedList;
 
 /**
  *
  * @author D00216500
  */
-public class HashMap {
-
- private static final int DEFAULT_CAPACITY = 103;
-    private Entry [] data;
+public class hashMap {
+    private static final int DEFAULT_CAPACITY = 103;
+    //DO NOT MAKE LINKEDLIST LIKE THIS
+    private LinkedList<Entry> [] data;
     private int size;
     
-    public HashMap(){
-        data = new Entry[DEFAULT_CAPACITY];
+    public hashMap(){
+        data = new LinkedList[DEFAULT_CAPACITY];
     }
     
-    public HashMap(int capacity){
+    public hashMap(int capacity){
         if(capacity <= 0){
             throw new IllegalArgumentException("Map capacity cannot be less than 1");
         }
-        data = new Entry[capacity];
+        data = new LinkedList[capacity];
     }
     
     public int size(){
@@ -40,52 +43,44 @@ public class HashMap {
         if(key == null || value == null){
             throw new IllegalArgumentException("Null fields not permitted");
         }
-        if(size == data.length){
-            data = growMap();
-        }
         
         int slot = hash(key);
-        System.out.println("Size of map: " + size + ", capacity: " + data.length);
-        System.out.println("Slot calculated: " + slot);
         
         if(data[slot] == null){
+            // If it's a new entry to an empty slot
+            data[slot] = new LinkedList();
             Entry newEntry = new Entry(key, value);
-            data[slot] = newEntry;
+            data[slot].add(newEntry);
             size++;
             return null;
         }else{
-            if(data[slot].key.equals(key)){
-                String oldValue = data[slot].updateValue(value);
-                return oldValue;
-            }else{
-                throw new SlotOccupiedException("Provided key maps to occupied slot in map.");
+            // If it's an update
+            for(Entry e : data[slot]){
+                if(e.key.equals(key)){
+                    String oldValue = e.updateValue(value);
+                    return oldValue;
+                }
             }
+            // Add collision
+            Entry newEntry = new Entry(key, value);
+            data[slot].add(newEntry);
+            size++;
+            return null;
         }
     }
     
     public String get(String key){
         int slot = hash(key);
         if(data[slot] != null){
-            return data[slot].value;
+            for(Entry e: data[slot]){
+                if(e.key.equals(key)){
+                    return e.value;
+                }
+            }
+            return null;
         }else{
             return null;
         }
-    }
-    
-    private Entry[] growMap(){
-        Entry[] newMap = new Entry[data.length*2];
-        for(int i = 0; i < data.length; i++){
-            String key = data[i].key;
-            int slot = key.hashCode();
-            slot = Math.abs(slot);
-            slot = slot % newMap.length;
-            if(newMap[slot] != null){
-                throw new MapFullException("Cannot complete resize operation. Continued action would result in data loss.");
-            }
-            newMap[slot]=data[i];
-        }
-        
-        return newMap;
     }
     
     private static class Entry{
@@ -109,4 +104,5 @@ public class HashMap {
             return oldValue;
         }
     }
+    
 }
